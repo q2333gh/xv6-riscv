@@ -16,22 +16,31 @@ extern char etext[];  // kernel.ld sets this to end of kernel code.
 extern char trampoline[]; // trampoline.S
 
 // Make a direct-map page table for the kernel.
+// [pictures/kernel_address_space.png]
 pagetable_t
 kvmmake(void)
 {
   pagetable_t kpgtbl;
 
   kpgtbl = (pagetable_t) kalloc();
+
   memset(kpgtbl, 0, PGSIZE);
 
-  // uart registers
-  kvmmap(kpgtbl, UART0, UART0, PGSIZE, PTE_R | PTE_W);
+  // address space is a set of segmentation with its permission.
+  // address space is 带权的段空间
 
-  // virtio mmio disk interface
+  // uart registers
+  // UART0 : Universal Asynchronous Receiver/Transmitter 0
+  kvmmap(kpgtbl, UART0, UART0, PGSIZE, PTE_R | PTE_W);
+  // (pagetable_t kpgtbl, uint64 va, uint64 pa, uint64 sz, int perm)
+  // todo:  why use  PTE_R not R for naming ?
+
+  // virtio(Virtual I/O Device 0) mmio(Memory-mapped I/O) disk interface
   kvmmap(kpgtbl, VIRTIO0, VIRTIO0, PGSIZE, PTE_R | PTE_W);
 
-  // PLIC
+  // PLIC(Platform Level Interrupt Controller)
   kvmmap(kpgtbl, PLIC, PLIC, 0x400000, PTE_R | PTE_W);
+
 
   // map kernel text executable and read-only.
   kvmmap(kpgtbl, KERNBASE, KERNBASE, (uint64)etext-KERNBASE, PTE_R | PTE_X);
