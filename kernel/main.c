@@ -13,21 +13,26 @@ main()
   if(cpuid() == 0){
     consoleinit();
     printfinit();
+
     printf("\n");
     printf("xv6 kernel is booting\n");
     printf("\n");
+
     kinit();         // physical page allocator
     kvminit();       // create kernel page table
     kvminithart();   // turn on paging
     procinit();      // process table
+    
     trapinit();      // trap vectors
     trapinithart();  // install kernel trap vector
     plicinit();      // set up interrupt controller
     plicinithart();  // ask PLIC for device interrupts
+
     binit();         // buffer cache
     iinit();         // inode table
     fileinit();      // file table
     virtio_disk_init(); // emulated hard disk
+
     userinit();      // first user process
     __sync_synchronize();
     started = 1;
