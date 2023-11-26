@@ -21,13 +21,15 @@ pagetable_t
 kvmmake(void)
 {
   pagetable_t kpgtbl;
-
   kpgtbl = (pagetable_t) kalloc();
-
   memset(kpgtbl, 0, PGSIZE);
 
   // address space is a set of segmentation with its permission.
   // address space is 带权的段空间
+
+  // PLIC(Platform Level Interrupt Controller)
+  kvmmap(kpgtbl, PLIC, PLIC, 0x400000, PTE_R | PTE_W);
+
 
   // uart registers
   // UART0 : Universal Asynchronous Receiver/Transmitter 0
@@ -38,17 +40,15 @@ kvmmake(void)
   // virtio(Virtual I/O Device 0) mmio(Memory-mapped I/O) disk interface
   kvmmap(kpgtbl, VIRTIO0, VIRTIO0, PGSIZE, PTE_R | PTE_W);
 
-  // PLIC(Platform Level Interrupt Controller)
-  kvmmap(kpgtbl, PLIC, PLIC, 0x400000, PTE_R | PTE_W);
-
-
   // map kernel text executable and read-only.
   kvmmap(kpgtbl, KERNBASE, KERNBASE, (uint64)etext-KERNBASE, PTE_R | PTE_X);
 
   // map kernel data and the physical RAM we'll make use of.
   kvmmap(kpgtbl, (uint64)etext, (uint64)etext, PHYSTOP-(uint64)etext, PTE_R | PTE_W);
 
-  // map the trampoline for trap entry/exit to
+
+  // map the trampoline(n. 蹦床) for trap entry/exit to
+  // helps the kernel to switch between user and kernel mode
   // the highest virtual address in the kernel.
   kvmmap(kpgtbl, TRAMPOLINE, (uint64)trampoline, PGSIZE, PTE_R | PTE_X);
 

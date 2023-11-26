@@ -1,4 +1,6 @@
 
+exit qemu
+ctrl+A  and then press X 
 
 debug in vscode:
 https://zhuanlan.zhihu.com/p/501901665

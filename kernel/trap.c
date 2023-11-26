@@ -33,6 +33,16 @@ trapinithart(void)
 // handle an interrupt, exception, or system call from user space.
 // called from trampoline.S
 //
+// [/pictures/Limited_Direct_Execution_Protocol.png]
+// after trap happen ,
+// 1.save the user mem(data,code) and regs(sp,pc...)
+// 2.restore to kernel mem and regs
+// 3.choose :
+//    exception,device-io,syscall(:), timer->yield
+// such syscall example : 
+// user code need to sleep awhile or user code want to create a process ...etc...
+
+// and , xv6 does not implement threads by default.
 void
 usertrap(void)
 {
@@ -80,6 +90,7 @@ usertrap(void)
   if(which_dev == 2)
     yield();
 
+// back to user mode.
   usertrapret();
 }
 
