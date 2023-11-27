@@ -16,7 +16,7 @@ extern char etext[];  // kernel.ld sets this to end of kernel code.
 extern char trampoline[]; // trampoline.S
 
 // Make a direct-map page table for the kernel.
-// [pictures/kernel_address_space.png]
+//! [pictures/kernel_address_space.png]
 pagetable_t
 kvmmake(void)
 {
@@ -46,8 +46,7 @@ kvmmake(void)
   // map kernel data and the physical RAM we'll make use of.
   kvmmap(kpgtbl, (uint64)etext, (uint64)etext, PHYSTOP-(uint64)etext, PTE_R | PTE_W);
 
-
-  // map the trampoline(n. 蹦床) for trap entry/exit to
+  // map the trampoline(n. 跳板) for trap entry/exit to kernel 
   // helps the kernel to switch between user and kernel mode
   // the highest virtual address in the kernel.
   kvmmap(kpgtbl, TRAMPOLINE, (uint64)trampoline, PGSIZE, PTE_R | PTE_X);
@@ -71,6 +70,7 @@ void
 kvminithart()
 {
   // wait for any previous writes to the page table memory to finish.
+// Supervisor FENCE for Virtual Memory Address
   sfence_vma();
 
   w_satp(MAKE_SATP(kernel_pagetable));

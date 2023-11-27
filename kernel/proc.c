@@ -228,7 +228,7 @@ uchar initcode[] = {
   0x00, 0x00, 0x00, 0x00
 };
 
-// Set up first user process.
+//! Set up the first user process.
 void
 userinit(void)
 {

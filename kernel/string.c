@@ -27,6 +27,7 @@ memcmp(const void *v1, const void *v2, uint n)
   return 0;
 }
 
+// source memory data will not erased after memmove
 void*
 memmove(void *dst, const void *src, uint n)
 {

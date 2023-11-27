@@ -79,7 +79,22 @@ struct trapframe {
   /* 280 */ uint64 t6;
 };
 
-enum procstate { UNUSED, USED, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
+enum procstate {
+
+  UNUSED,  // An UNUSED process has no memory, no page table, no kernel stack,
+           // no trap frame, no context, and no parent. It is essentially a
+           // placeholder in the process table1.
+  USED,
+  SLEEPING,
+  RUNNABLE,
+  RUNNING,
+  ZOMBIE  // This state means that the process has terminated, but its parent
+          // has not yet waited for it. A ZOMBIE process has a valid memory
+          // size, a page table, a kernel stack, a trap frame, a context, a
+          // parent, a process ID, and no channel. The kernel will free the
+          // memory, the page table, and the kernel stack of the process when
+          // its parent calls wait ()
+};
 
 // Per-process state
 struct proc {
@@ -90,6 +105,7 @@ struct proc {
   void *chan;                  // If non-zero, sleeping on chan
   int killed;                  // If non-zero, have been killed
   int xstate;                  // Exit status to be returned to parent's wait
+
   int pid;                     // Process ID
 
   // wait_lock must be held when using this:
@@ -99,8 +115,11 @@ struct proc {
   uint64 kstack;               // Virtual address of kernel stack
   uint64 sz;                   // Size of process memory (bytes)
   pagetable_t pagetable;       // User page table
+
+  // work together to save-load ctx and map reg with its offset.
   struct trapframe *trapframe; // data page for trampoline.S
-  struct context context;      // swtch() here to run process
+  struct context context;      // regs, swtch() here to run process
+  
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
