@@ -4,6 +4,7 @@
 #include "riscv.h"
 #include "defs.h"
 
+// volatile : tell compiler dont optimize code.
 volatile static int started = 0;
 
 // start() jumps here in supervisor mode on all CPUs.
