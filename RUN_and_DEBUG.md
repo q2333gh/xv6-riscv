@@ -14,3 +14,6 @@ prep env for debug xv6-os
 https://zhuanlan.zhihu.com/p/509296983
 or this : 
 
+## gen compile_commands.json
+bare
+
