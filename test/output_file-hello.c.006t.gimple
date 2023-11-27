@@ -1,0 +1,28 @@
+int add (int a, int b)
+{
+  int D.2353;
+  int c;
+
+  c = a + b;
+  D.2353 = c;
+  return D.2353;
+}
+
+
+int main ()
+{
+  int D.2355;
+
+  {
+    int i;
+
+    printf ("hello world");
+    i = add (5, 6);
+    D.2355 = 0;
+    return D.2355;
+  }
+  D.2355 = 0;
+  return D.2355;
+}
+
+
