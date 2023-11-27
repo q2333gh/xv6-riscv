@@ -17,7 +17,10 @@ or this :
 ## gen compile_commands.json
 https://github.com/rizsotto/Bear
 ```
-bear -- make qemu
+<!-- stop vpn if need: -->
+export https_proxy=
+export http_proxy=
+make clean && bear -- make qemu
 ```
 
 
