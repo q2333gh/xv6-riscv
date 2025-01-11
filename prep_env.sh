@@ -31,3 +31,9 @@ Step 3
 
 write quit
 #
+
+
+这个也行： 
+```
+sudo apt install binutils-riscv64-linux-gnu gcc-riscv64-linux-gnu gdb-multiarch qemu-system-misc opensbi u-boot-qemu qemu-utils -y 
+```

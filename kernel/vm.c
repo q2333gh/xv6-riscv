@@ -27,8 +27,6 @@ kvmmake(void)
   // address space is a set of segmentation with its permission.
   // address space is 带权的段空间
 
-  // PLIC(Platform Level Interrupt Controller)
-  kvmmap(kpgtbl, PLIC, PLIC, 0x400000, PTE_R | PTE_W);
 
 
   // uart registers
@@ -39,6 +37,7 @@ kvmmake(void)
 
   // virtio(Virtual I/O Device 0) mmio(Memory-mapped I/O) disk interface
   kvmmap(kpgtbl, VIRTIO0, VIRTIO0, PGSIZE, PTE_R | PTE_W);
+
 
   // PLIC
   kvmmap(kpgtbl, PLIC, PLIC, 0x4000000, PTE_R | PTE_W);
