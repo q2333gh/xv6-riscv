@@ -15,7 +15,6 @@
 
 .section trampsec
 .globl trampoline
-.globl usertrap
 trampoline:
 .align 4
 .globl uservec
@@ -81,17 +80,9 @@ uservec:
         # load the address of usertrap(), from p->trapframe->kernel_trap
         ld t0, 16(a0)
 
-        # fetch the kernel page table address, from p->trapframe->kernel_satp.
+        # load the kernel page table, from p->trapframe->kernel_satp
         ld t1, 0(a0)
-
-        # wait for any previous memory operations to complete, so that
-        # they use the user page table.
-        sfence.vma zero, zero
-
-        # install the kernel page table.
         csrw satp, t1
-
-        # flush now-stale user entries from the TLB.
         sfence.vma zero, zero
 
         # jump to usertrap(), which does not return
@@ -105,7 +96,6 @@ userret:
         # a0: user page table, for satp.
 
         # switch to the user page table.
-        sfence.vma zero, zero
         csrw satp, a0
         sfence.vma zero, zero
 

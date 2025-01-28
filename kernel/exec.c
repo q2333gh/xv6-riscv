@@ -19,9 +19,6 @@ int flags2perm(int flags)
     return perm;
 }
 
-// main function of the program.
-// loading the program into memory, setting up the stack, and then switching to
-// the new program.
 int
 exec(char *path, char **argv)
 {
@@ -34,10 +31,8 @@ exec(char *path, char **argv)
   pagetable_t pagetable = 0, oldpagetable;
   struct proc *p = myproc();
 
-  // lock part fs  file
   begin_op();
 
-// check if file can open
   if((ip = namei(path)) == 0){
     end_op();
     return -1;
@@ -55,9 +50,6 @@ exec(char *path, char **argv)
     goto bad;
 
   // Load program into memory.
-  // This loop reads each program header from the file and loads the
-  // corresponding segment into memory. If any step fails, it jumps to the bad
-  // label.
   for(i=0, off=elf.phoff; i<elf.phnum; i++, off+=sizeof(ph)){
     if(readi(ip, 0, (uint64)&ph, off, sizeof(ph)) != sizeof(ph))
       goto bad;
@@ -83,19 +75,17 @@ exec(char *path, char **argv)
   p = myproc();
   uint64 oldsz = p->sz;
 
-  // Allocate some pages at the next page boundary.
+  // Allocate two pages at the next page boundary.
   // Make the first inaccessible as a stack guard.
-  // Use the rest as the user stack.
+  // Use the second as the user stack.
   sz = PGROUNDUP(sz);
   uint64 sz1;
-  // This line allocates two pages of memory for the user stack. If the
-  // allocation fails, it jumps to the bad labe
-  if((sz1 = uvmalloc(pagetable, sz, sz + (USERSTACK+1)*PGSIZE, PTE_W)) == 0)
+  if((sz1 = uvmalloc(pagetable, sz, sz + 2*PGSIZE, PTE_W)) == 0)
     goto bad;
   sz = sz1;
-  uvmclear(pagetable, sz-(USERSTACK+1)*PGSIZE);
+  uvmclear(pagetable, sz-2*PGSIZE);
   sp = sz;
-  stackbase = sp - USERSTACK*PGSIZE;
+  stackbase = sp - PGSIZE;
 
   // Push argument strings, prepare rest of stack in ustack.
   for(argc = 0; argv[argc]; argc++) {
@@ -123,8 +113,6 @@ exec(char *path, char **argv)
   // argc is returned via the system call return
   // value, which goes in a0.
   p->trapframe->a1 = sp;
-  // This line sets the a1 register in the trap frame to the stack pointer. This
-  // is how the argv array is passed to the program.
 
   // Save program name for debugging.
   for(last=s=path; *s; s++)
@@ -137,7 +125,6 @@ exec(char *path, char **argv)
   p->pagetable = pagetable;
   p->sz = sz;
   p->trapframe->epc = elf.entry;  // initial program counter = main
-
   p->trapframe->sp = sp; // initial stack pointer
   proc_freepagetable(oldpagetable, oldsz);
 
@@ -177,35 +164,3 @@ loadseg(pagetable_t pagetable, uint64 va, struct inode *ip, uint offset, uint sz
   
   return 0;
 }
-
-/**
- * This is a C program that appears to be part of an operating system kernel,
-possibly xv6 or a similar system. Here's a brief explanation of each part:
-
-- **#include "types.h"** etc: These are preprocessor directives that include
-various header files needed for the program. These files contain definitions and
-declarations that are used in the program.
-
-- **static int loadseg(pde_t *, uint64, struct inode *, uint, uint);**: This is
-a function prototype for `loadseg`, which is defined later in the code. It's a
-static function, meaning it's only visible within this file.
-
-- **int flags2perm(int flags)**: This function converts a set of flags to
-permissions. It checks if certain bits are set in the flags and sets the
-corresponding permissions.
-
-- **int exec(char *path, char **argv)**: This is the main function of the
-program. It's responsible for executing a program. It does this by loading the
-program into memory, setting up the stack, and then switching to the new
-program.
-
-- **static int loadseg(pagetable_t pagetable, uint64 va, struct inode *ip, uint
-offset, uint sz)**: This function loads a segment of a program into memory. It
-reads the segment from the inode `ip` at offset `offset` and loads it into the
-page table at virtual address `va`.
-
-The code is quite complex and involves many aspects of operating system design,
-including virtual memory, file systems, and process management. If you have
-specific questions about any part of the code, feel free to ask!
- *
-*/
