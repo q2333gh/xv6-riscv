@@ -9,6 +9,7 @@
 //   control-p -- print process list
 //
 
+#include "types.h"
 #include <stdarg.h>
 
 #include "defs.h"
@@ -20,15 +21,16 @@
 #include "riscv.h"
 #include "sleeplock.h"
 #include "spinlock.h"
-#include "types.h"
 
 #define BACKSPACE 0x100
-#define C(x) ((x) - '@')  // Control-x
+#define CTRL_MASK 64            // 或者用 0x40 ,或者 '@'
+#define C(x) ((x) - CTRL_MASK)  // Control-x
 
 //
 // send one character to the uart.
 // ( Universal Asynchronous Receiver-Transmitter,impl by MMIO)
-// 这里的 async指的是:硬件数据传输不需要时钟信号线,和编程语言中的异步概念稍有不同
+// 这里的
+// async指的是:硬件数据传输不需要时钟信号线,和编程语言中的异步概念稍有不同
 // called by printf(), and to echo input
 // characters, but not from write().
 //
@@ -43,16 +45,16 @@ void consputc(int c) {
   }
 }
 
+#define INPUT_BUF_SIZE 128
 struct {
   struct spinlock lock;
-
   // input
-#define INPUT_BUF_SIZE 128
   char buf[INPUT_BUF_SIZE];
   uint r;  // Read index
   uint w;  // Write index
   uint e;  // Edit index
-} cons;
+} cons; //legacy name. console. 并非 "pros and cons" K&R C时代（1970s）
+// K&R C时代（1970s）,标识符只有8个字符宽度.
 
 //
 // user write()s to the console go here.
@@ -132,7 +134,7 @@ void consoleintr(int c) {
   acquire(&cons.lock);
 
   switch (c) {
-    case C('P'):  // Print process list.
+    case C('P'):  // Print process list.  Ctrl+P = 'P' - '@' = 80 - 64 = 16
       procdump();
       break;
     case C('U'):  // Kill line.
