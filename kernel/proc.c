@@ -64,7 +64,7 @@ procinit(void)
 int
 cpuid()
 {
-  int id = r_tp();
+  int id = r_tp();// r_ read thread pointer: hartid
   return id;
 }
 

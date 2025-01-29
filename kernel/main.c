@@ -11,8 +11,8 @@ void
 main()
 {
   if(cpuid() == 0){
-    consoleinit();
-    printfinit();
+    consoleinit();//设置UART
+    printfinit();//初始化打印功能和打印锁
     printf("\n");
     printf("xv6 kernel is booting\n");
     printf("\n");
