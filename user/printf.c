@@ -13,11 +13,11 @@ putc(int fd, char c)
 }
 
 static void
-printint(int fd, int xx, int base, int sgn)
+printint(int fd, long long xx, int base, int sgn)
 {
-  char buf[16];
+  char buf[20];
   int i, neg;
-  uint x;
+  unsigned long long x;
 
   neg = 0;
   if(sgn && xx < 0){
@@ -47,7 +47,7 @@ printptr(int fd, uint64 x) {
     putc(fd, digits[x >> (sizeof(uint64) * 8 - 4)]);
 }
 
-// Print to the given fd. Only understands %d, %x, %p, %s.
+// Print to the given fd. Only understands %d, %x, %p, %c, %s.
 void
 vprintf(int fd, const char *fmt, va_list ap)
 {
@@ -64,6 +64,7 @@ vprintf(int fd, const char *fmt, va_list ap)
         putc(fd, c);
       }
     } else if(state == '%'){
+<<<<<<< HEAD
       if(c == 'd'){
         printint(fd, va_arg(ap, int), 10, 1);
       } else if(c == 'l') {
@@ -89,6 +90,52 @@ vprintf(int fd, const char *fmt, va_list ap)
         putc(fd, '%');
         putc(fd, c);
       }
+=======
+      c1 = c2 = 0;
+      if(c0) c1 = fmt[i+1] & 0xff;
+      if(c1) c2 = fmt[i+2] & 0xff;
+      if(c0 == 'd'){
+        printint(fd, va_arg(ap, int), 10, 1);
+      } else if(c0 == 'l' && c1 == 'd'){
+        printint(fd, va_arg(ap, uint64), 10, 1);
+        i += 1;
+      } else if(c0 == 'l' && c1 == 'l' && c2 == 'd'){
+        printint(fd, va_arg(ap, uint64), 10, 1);
+        i += 2;
+      } else if(c0 == 'u'){
+        printint(fd, va_arg(ap, uint32), 10, 0);
+      } else if(c0 == 'l' && c1 == 'u'){
+        printint(fd, va_arg(ap, uint64), 10, 0);
+        i += 1;
+      } else if(c0 == 'l' && c1 == 'l' && c2 == 'u'){
+        printint(fd, va_arg(ap, uint64), 10, 0);
+        i += 2;
+      } else if(c0 == 'x'){
+        printint(fd, va_arg(ap, uint32), 16, 0);
+      } else if(c0 == 'l' && c1 == 'x'){
+        printint(fd, va_arg(ap, uint64), 16, 0);
+        i += 1;
+      } else if(c0 == 'l' && c1 == 'l' && c2 == 'x'){
+        printint(fd, va_arg(ap, uint64), 16, 0);
+        i += 2;
+      } else if(c0 == 'p'){
+        printptr(fd, va_arg(ap, uint64));
+      } else if(c0 == 'c'){
+        putc(fd, va_arg(ap, uint32));
+      } else if(c0 == 's'){
+        if((s = va_arg(ap, char*)) == 0)
+          s = "(null)";
+        for(; *s; s++)
+          putc(fd, *s);
+      } else if(c0 == '%'){
+        putc(fd, '%');
+      } else {
+        // Unknown % sequence.  Print it to draw attention.
+        putc(fd, '%');
+        putc(fd, c0);
+      }
+
+>>>>>>> upstream/riscv
       state = 0;
     }
   }

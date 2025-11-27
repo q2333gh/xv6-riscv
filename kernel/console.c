@@ -22,17 +22,14 @@
 #include "sleeplock.h"
 #include "spinlock.h"
 
-#define BACKSPACE 0x100
-#define CTRL_MASK 64            // 或者用 0x40 ,或者 '@'
-#define C(x) ((x) - CTRL_MASK)  // Control-x
+#define BACKSPACE 0x100  // erase the last output character
+#define C(x)  ((x)-'@')  // Control-x
 
 //
-// send one character to the uart.
-// ( Universal Asynchronous Receiver-Transmitter,impl by MMIO)
-// 这里的
-// async指的是:硬件数据传输不需要时钟信号线,和编程语言中的异步概念稍有不同
-// called by printf(), and to echo input
-// characters, but not from write().
+// send one character to the uart, but don't use
+// interrupts or sleep(). safe to be called from
+// interrupts, e.g. by printf and to echo input
+// characters.
 //
 void consputc(int c) {
   if (c == BACKSPACE) {
@@ -48,7 +45,9 @@ void consputc(int c) {
 #define INPUT_BUF_SIZE 128
 struct {
   struct spinlock lock;
-  // input
+  
+  // input circular buffer
+#define INPUT_BUF_SIZE 128
   char buf[INPUT_BUF_SIZE];
   uint r;  // Read index
   uint w;  // Write index
@@ -57,15 +56,23 @@ struct {
 // K&R C时代（1970s）,标识符只有8个字符宽度.
 
 //
-// user write()s to the console go here.
+// user write() system calls to the console go here.
+// uses sleep() and UART interrupts.
 //
-int consolewrite(int user_src, uint64 src, int n) {
-  int i;
+int
+consolewrite(int user_src, uint64 src, int n)
+{
+  char buf[32]; // move batches from user space to uart.
+  int i = 0;
 
-  for (i = 0; i < n; i++) {
-    char c;
-    if (either_copyin(&c, user_src, src + i, 1) == -1) break;
-    uartputc(c);
+  while(i < n){
+    int nn = sizeof(buf);
+    if(nn > n - i)
+      nn = n - i;
+    if(either_copyin(buf, user_src, src+i, nn) == -1)
+      break;
+    uartwrite(buf, nn);
+    i += nn;
   }
 
   return i;
@@ -74,7 +81,7 @@ int consolewrite(int user_src, uint64 src, int n) {
 //
 // user read()s from the console go here.
 // copy (up to) a whole input line to dst.
-// user_dist indicates whether dst is a user
+// user_dst indicates whether dst is a user
 // or kernel address.
 //
 int consoleread(int user_dst, uint64 dst, int n) {
@@ -126,7 +133,7 @@ int consoleread(int user_dst, uint64 dst, int n) {
 
 //
 // the console input interrupt handler.
-// uartintr() calls this for input character.
+// uartintr() calls this for each input character.
 // do erase/kill processing, append to cons.buf,
 // wake up consoleread() if a whole line has arrived.
 //
