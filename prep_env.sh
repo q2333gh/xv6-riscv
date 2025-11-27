@@ -8,6 +8,19 @@ git submodule update --depth 1
 # --depth 1 option only the latest commit in the history.
 cd ./riscv-gnu-toolchain
 sudo apt-get install autoconf automake autotools-dev curl python3 python3-pip libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev ninja-build git cmake libglib2.0-dev -y
+
+# gcc-riscv64-linux-gnu → 生成 riscv64 Linux ELF 可执行程序
+
+# binutils-riscv64-linux-gnu → ld, as, objcopy, nm 等工具，适配 Linux ABI
+
+# gdb-multiarch → 支持多架构调试，包括 riscv32/64 Linux 程序
+
+# qemu-system-misc → 可模拟完整 RISC-V 64 系统（包括 Linux）
+
+# git, build-essential → 用于源码编译，和 RISC-V 特定无关
+# 支持 riscv64 Linux ABI，可以编译完整 Linux 用户空间程序
+
+# 不适合裸机程序（裸机程序可能需要 -mno-relax 等特殊选项）
 sudo mkdir -p /opt/riscv/bin
 sudo chmod 777 /opt/riscv/bin
 echo 'export PATH=$PATH:/opt/riscv/bin' >>~/.bashrc
